@@ -3,6 +3,7 @@ name: CI / Build & Release
 on:
   push:
     branches:
+      - main
       - master
 
 jobs:
@@ -37,21 +38,21 @@ jobs:
       - name: Get project version
         id: get_version
         run: |
-          # A more robust way to extract the version from gradle.properties
           VERSION=$(sed -n 's/^version=\(.*\)/\1/p' gradle.properties)
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Parsed version: $VERSION"
 
       - name: Build (run tests and create fat JAR)
-          run: ./gradlew --no-daemon clean build
+        run: ./gradlew --no-daemon clean build
 
       - name: Create GitHub Release and Upload Artifact
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: v${{ steps.get_version.outputs.VERSION }}
-            name: Release v${{ steps.get_version.outputs.VERSION }}
-            body: Automated release for version ${{ steps.get_version.outputs.VERSION }}
-            draft: false
-            prerelease: false
-            files: |
-              build/libs/todo-app-${{ steps.get_version.outputs.VERSION }}*.jar
-            fail_on_unmatched_files: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          body: Automated release for version ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            build/libs/todo-app-${{ steps.get_version.outputs.VERSION }}*.jar
+          fail_on_unmatched_files: true
